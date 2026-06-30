@@ -95,7 +95,7 @@ export default function Layout() {
       {/* Main Side-by-Side App Grid */}
       <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
         {/* Sidebar Navigation */}
-        <aside className="w-full md:w-64 lg:w-72 bg-[#F8F9FA] border-r border-[#bbcabf]/30 flex flex-col shrink-0 z-40 h-full">
+        <aside className="hidden md:flex md:w-64 lg:w-72 bg-[#F8F9FA] border-r border-[#bbcabf]/30 flex flex-col shrink-0 z-40 h-full">
           {/* Logo & Workspace */}
           <div className="p-5 border-b border-[#bbcabf]/20 flex items-center justify-between shrink-0">
           <div 
@@ -215,14 +215,22 @@ export default function Layout() {
           
           {/* Quick Search */}
           <div className="flex items-center gap-3">
+            {/* Large search input for sm and up */}
             <div 
               onClick={() => setQuickSearchOpen(true)}
-              className="flex items-center gap-2 bg-[#f3f4f5] hover:bg-[#edeeef] text-gray-500 px-4 py-2 rounded-full cursor-pointer transition-colors w-72 sm:w-96 border border-[#bbcabf]/30"
+              className="hidden sm:flex items-center gap-2 bg-[#f3f4f5] hover:bg-[#edeeef] text-gray-500 px-4 py-2 rounded-full cursor-pointer transition-colors w-72 sm:w-96 border border-[#bbcabf]/30"
             >
               <Search className="w-4 h-4 text-gray-400 shrink-0" />
               <span className="text-xs font-medium truncate">Search insights, tasks, or projections...</span>
               <span className="ml-auto text-[10px] font-mono bg-white px-1.5 py-0.5 rounded text-gray-450 border border-gray-200 hidden sm:inline">⌘K</span>
             </div>
+            {/* Icon-only search button for mobile */}
+            <button 
+              onClick={() => setQuickSearchOpen(true)}
+              className="flex sm:hidden w-9 h-9 rounded-full bg-gray-50 border border-gray-200 items-center justify-center text-gray-600 hover:bg-emerald-50 hover:text-[#10B981] transition-colors"
+            >
+              <Search className="w-4 h-4 text-gray-400" />
+            </button>
           </div>
 
           {/* Right Header Controls */}
@@ -289,9 +297,32 @@ export default function Layout() {
         </header>
 
         {/* Dynamic Page Content */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto overflow-x-hidden">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 pb-24 md:pb-8 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </main>
+
+        {/* Mobile Bottom Navigation Bar */}
+        <nav className="bg-white/95 backdrop-blur-md border-t border-gray-150 p-2.5 flex justify-around items-center md:hidden shadow-lg shrink-0">
+          {navItems.slice(0, 5).map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-[9px] font-bold uppercase tracking-wider transition-all duration-200 ${
+                    isActive
+                      ? 'text-[#10B981]'
+                      : 'text-gray-400 hover:text-gray-600'
+                  }`
+                }
+              >
+                <Icon className="w-4.5 h-4.5" />
+                <span>{item.name.split(' ')[0]}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
       </div>
       </div>
 
