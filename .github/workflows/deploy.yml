@@ -1,0 +1,190 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# ZeroHour AI — CI/CD Pipeline
+# Builds the React app, pushes to Google Container Registry (GCR),
+# and deploys to Google Cloud Run on every push to main.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: ZeroHour AI — Build, Push & Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  # ─── GCP Configuration ────────────────────────────────────────────────────
+  # Set these in GitHub → Settings → Secrets and Variables → Actions
+  GCP_PROJECT_ID:        ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION:            ${{ secrets.GCP_REGION }}           # e.g. us-central1
+  CLOUD_RUN_SERVICE:     ${{ secrets.CLOUD_RUN_SERVICE }}    # e.g. zerohour-ai
+
+  # ─── Image Configuration ──────────────────────────────────────────────────
+  REGISTRY:              gcr.io
+  IMAGE_NAME:            gcr.io/${{ secrets.GCP_PROJECT_ID }}/zerohour-ai
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Job 1: Quality Gate — TypeScript check + Lint
+  # ─────────────────────────────────────────────────────────────────────────
+  quality:
+    name: 🔍 Quality Gate (TypeScript + Lint)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --frozen-lockfile
+
+      - name: TypeScript type check
+        run: npx tsc -b --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Job 2: Build & Push to GCR
+  # Runs only on pushes to main (not PRs)
+  # ─────────────────────────────────────────────────────────────────────────
+  build-and-push:
+    name: 🐳 Build & Push to GCR
+    runs-on: ubuntu-latest
+    needs: quality
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Configure Docker to use GCR
+        run: gcloud auth configure-docker gcr.io --quiet
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate image metadata (tags + labels)
+        id: meta
+        run: |
+          SHORT_SHA="${GITHUB_SHA::8}"
+          IMAGE_TAG="${{ env.IMAGE_NAME }}:${SHORT_SHA}"
+          IMAGE_LATEST="${{ env.IMAGE_NAME }}:latest"
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "image_latest=${IMAGE_LATEST}" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Build & Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image_tag }}
+            ${{ env.IMAGE_NAME }}:latest
+          labels: |
+            org.opencontainers.image.title=zerohour-ai
+            org.opencontainers.image.description=ZeroHour AI Productivity OS
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.repository.updated_at }}
+          # Use GitHub Actions cache to speed up subsequent builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Build for linux/amd64 (Cloud Run requirement)
+          platforms: linux/amd64
+
+      - name: Image pushed summary
+        run: |
+          echo "## ✅ Docker Image Pushed to GCR" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ steps.meta.outputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**SHA:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Job 3: Deploy to Cloud Run
+  # ─────────────────────────────────────────────────────────────────────────
+  deploy:
+    name: 🚀 Deploy to Cloud Run
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
+            --image ${{ needs.build-and-push.outputs.image_tag }} \
+            --region ${{ env.GCP_REGION }} \
+            --platform managed \
+            --port 8080 \
+            --allow-unauthenticated \
+            --min-instances 0 \
+            --max-instances 10 \
+            --memory 512Mi \
+            --cpu 1 \
+            --concurrency 100 \
+            --timeout 60 \
+            --set-env-vars="NODE_ENV=production" \
+            --labels="app=zerohour-ai,managed-by=github-actions,git-sha=${GITHUB_SHA::8}" \
+            --quiet
+
+      - name: Fetch deployed service URL
+        id: service_url
+        run: |
+          URL=$(gcloud run services describe ${{ env.CLOUD_RUN_SERVICE }} \
+            --region ${{ env.GCP_REGION }} \
+            --format 'value(status.url)')
+          echo "url=${URL}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test — verify /health endpoint
+        run: |
+          echo "Waiting 10s for service to fully start..."
+          sleep 10
+          HEALTH_URL="${{ steps.service_url.outputs.url }}/health"
+          echo "Probing: ${HEALTH_URL}"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${HEALTH_URL}")
+          if [ "$STATUS" -ne 200 ]; then
+            echo "❌ Health check failed with HTTP $STATUS"
+            exit 1
+          fi
+          echo "✅ Health check passed (HTTP $STATUS)"
+
+      - name: Deployment summary
+        run: |
+          echo "## 🚀 Deployed to Cloud Run" >> $GITHUB_STEP_SUMMARY
+          echo "**Service:** \`${{ env.CLOUD_RUN_SERVICE }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Region:** \`${{ env.GCP_REGION }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ steps.service_url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
