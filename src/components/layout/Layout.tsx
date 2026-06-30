@@ -95,24 +95,22 @@ export default function Layout() {
       {/* Main Side-by-Side App Grid */}
       <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
         {/* Sidebar Navigation */}
-        <aside className="w-full md:w-64 lg:w-72 bg-white border-r border-[#E5E7EB] flex flex-col shrink-0 z-40 h-full">
+        <aside className="w-full md:w-64 lg:w-72 bg-[#F8F9FA] border-r border-[#bbcabf]/30 flex flex-col shrink-0 z-40 h-full">
           {/* Logo & Workspace */}
-          <div className="p-5 border-b border-gray-100 flex items-center justify-between shrink-0">
+          <div className="p-5 border-b border-[#bbcabf]/20 flex items-center justify-between shrink-0">
           <div 
             onClick={() => navigate('/')} 
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#064E3B] flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-300">
-              <Zap className="w-5 h-5 fill-white" />
+            <div className="w-10 h-10 rounded-xl bg-[#006c49] flex items-center justify-center text-white shadow-md shadow-emerald-500/10 group-hover:scale-105 transition-transform duration-300">
+              <Zap className="w-5 h-5 fill-white text-white" />
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-['Sora'] font-extrabold text-lg tracking-tight text-[#111827]">ZeroHour</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md">OS 3.0</span>
+              <div className="flex items-center gap-1">
+                <span className="font-['Sora'] font-extrabold text-base tracking-tight text-[#006c49]">ZeroHour AI</span>
               </div>
-              <p className="text-[11px] text-[#6B7280] font-medium flex items-center gap-1 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                When Every Minute Matters
+              <p className="text-[10px] text-gray-500 font-bold tracking-wider">
+                Gemini Connected
               </p>
             </div>
           </div>
@@ -149,12 +147,12 @@ export default function Layout() {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                  `flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 group ${
                     isActive
-                      ? 'bg-[#10B981] text-white shadow-lg shadow-emerald-500/20 font-semibold'
+                      ? 'bg-[#10B981] text-[#00422b] scale-[0.98] shadow-md shadow-emerald-500/10'
                       : item.highlight
                       ? 'text-amber-600 bg-amber-50/80 hover:bg-amber-100/80'
-                      : 'text-[#4B5563] hover:bg-gray-100 hover:text-[#111827]'
+                      : 'text-[#3c4a42] hover:bg-gray-200/50 hover:text-gray-900'
                   }`
                 }
               >
@@ -219,11 +217,11 @@ export default function Layout() {
           <div className="flex items-center gap-3">
             <div 
               onClick={() => setQuickSearchOpen(true)}
-              className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200/70 text-gray-500 px-3.5 py-1.5 rounded-full cursor-pointer transition-colors w-48 sm:w-64 xl:w-80 border border-transparent hover:border-gray-300"
+              className="flex items-center gap-2 bg-[#f3f4f5] hover:bg-[#edeeef] text-gray-500 px-4 py-2 rounded-full cursor-pointer transition-colors w-72 sm:w-96 border border-[#bbcabf]/30"
             >
               <Search className="w-4 h-4 text-gray-400 shrink-0" />
-              <span className="text-xs font-medium truncate">Search AI insights, risks...</span>
-              <span className="ml-auto text-[10px] font-mono bg-white px-1.5 py-0.5 rounded text-gray-400 border border-gray-200 hidden sm:inline">⌘K</span>
+              <span className="text-xs font-medium truncate">Search insights, tasks, or projections...</span>
+              <span className="ml-auto text-[10px] font-mono bg-white px-1.5 py-0.5 rounded text-gray-450 border border-gray-200 hidden sm:inline">⌘K</span>
             </div>
           </div>
 
@@ -273,13 +271,16 @@ export default function Layout() {
             </div>
 
             {/* User Profile avatar */}
-            <div className="flex items-center gap-3 pl-5 border-l border-gray-200">
+            <div className="flex items-center gap-3 pl-5 border-l border-[#bbcabf]/30">
               <div className="text-right hidden md:block">
                 <p className="text-xs font-bold text-gray-900 leading-tight">Alex Rivera</p>
-                <p className="text-[10px] text-gray-500">Founder & CEO</p>
+                <p className="text-[10px] text-[#006C49] flex items-center justify-end gap-1 font-bold">
+                  <span className="w-1.5 h-1.5 bg-[#10B981] rounded-full animate-pulse"></span>
+                  Gemini Connected
+                </p>
               </div>
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 to-amber-500 p-0.5 shadow-md">
-                <div className="w-full h-full rounded-full bg-white flex items-center justify-center font-['Sora'] font-bold text-xs text-emerald-900">
+              <div className="w-9 h-9 rounded-full border-2 border-[#10B981]/30 p-0.5 shadow-md bg-white">
+                <div className="w-full h-full rounded-full bg-[#10B981]/10 flex items-center justify-center font-['Sora'] font-bold text-xs text-[#006c49]">
                   AR
                 </div>
               </div>
