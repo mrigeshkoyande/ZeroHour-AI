@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Sora:wght@100..900&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-on-primary-container: #00422b;
+  --color-on-tertiary-fixed-variant: #00513a;
+  --color-primary-fixed: #6ffbbe;
+  --color-on-primary-fixed: #002113;
+  --color-surface-container-lowest: #ffffff;
+  --color-secondary-fixed: #68fcbf;
+  --color-surface-container-low: #f3f4f5;
+  --color-text-muted: #6B7280;
+  --color-on-secondary-fixed: #002114;
+  --color-primary-fixed-dim: #4edea3;
+  --color-on-secondary-container: #00714e;
+  --color-tertiary-container: #67b191;
+  --color-surface-tint: #006c49;
+  --color-on-primary: #ffffff;
+  --color-on-error: #ffffff;
+  --color-inverse-surface: #2e3132;
+  --color-on-secondary: #ffffff;
+  --color-tertiary-fixed-dim: #8bd6b4;
+  --color-background: #f8f9fa;
+  --color-tertiary: #1b6b4f;
+  --color-surface-container: #edeeef;
+  --color-outline: #6c7a71;
+  --color-inverse-primary: #4edea3;
+  --color-secondary: #006c4b;
+  --color-on-background: #191c1d;
+  --color-on-error-container: #93000a;
+  --color-outline-variant: #bbcabf;
+  --color-primary: #10B981;
+  --color-primary-dark: #006c49;
+  --color-surface-dim: #d9dadb;
+  --color-tertiary-fixed: #a6f2cf;
+  --color-on-tertiary-container: #00422e;
+  --color-on-primary-fixed-variant: #005236;
+  --color-text-main: #111827;
+  --color-inverse-on-surface: #f0f1f2;
+  --color-on-tertiary-fixed: #002115;
+  --color-soft-lime: #ECFCCB;
+  --color-error-container: #ffdad6;
+  --color-secondary-container: #64f9bc;
+  --color-on-surface-variant: #3c4a42;
+  --color-on-secondary-fixed-variant: #005137;
+  --color-surface-variant: #e1e3e4;
+  --color-on-tertiary: #ffffff;
+  --color-surface-container-high: #e7e8e9;
+  --color-surface-container-highest: #e1e3e4;
+  --color-error: #ba1a1a;
+  --color-secondary-fixed-dim: #45dfa4;
+  --color-surface-glass: rgba(255, 255, 255, 0.7);
+  --color-on-surface: #191c1d;
+  --color-surface: #f8f9fa;
+  --color-emerald-950: #064E3B;
+  --color-accent-orange: #FB923C;
+  --color-accent-amber: #F59E0B;
+  --font-headline-md: "Sora", sans-serif;
+  --font-body-lg: "Inter", sans-serif;
+  --font-body-md: "Inter", sans-serif;
+  --font-headline-lg: "Sora", sans-serif;
+  --font-label-sm: "Inter", sans-serif;
+  --font-display-hero: "Sora", sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: #ffffff;
+  color: #191c1d;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #bbcabf;
+  border-radius: 10px;
+}
+
+::selection {
+  background: rgba(16, 185, 129, 0.2);
+  color: #064E3B;
+}
